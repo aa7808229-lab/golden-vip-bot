@@ -1,60 +1,48 @@
 import os
-from telegram import Update, Bot
+from flask import Flask, request
+from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")
 
-matches = [
-    "Bayern Munich vs Union Berlin",
-    "Monza vs Sassuolo",
-    "Monaco vs Lens",
-    "Brentford vs Chelsea",
-    "Bristol City vs Watford",
-    "Espanyol vs Elche",
-]
+app = Flask(__name__)
 
-
-def make_post():
-    text = "⚽ AP PREDICTOR ⚽\n\n"
-    text += "🔐 VIP PREDICTIONS\n\n"
-
-    for match in matches:
-        text += f"⚽ {match}\n"
-        text += "Prediction: VIP\n\n"
-
-    return text
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "⚽ بەخێربێیت بۆ Golden VIP!\n\n"
-        "🔐 VIP Predictions"
+        "🆓 Free Predictions\n"
+        "💎 VIP Predictions\n"
+        "💳 Buy VIP"
     )
 
 
-async def send_channel_post():
-    bot = Bot(token=BOT_TOKEN)
-    await bot.send_message(
-        chat_id=CHANNEL_ID,
-        text=make_post()
-    )
+telegram_app.add_handler(CommandHandler("start", start))
 
 
-async def main():
-    await send_channel_post()
+@app.route("/")
+def home():
+    return "Golden VIP Bot is running!"
 
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
 
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling()
-
-    import asyncio
-    await asyncio.Event().wait()
+@app.route("/webhook", methods=["POST"])
+async def webhook():
+    data = request.get_json(force=True)
+    update = Update.de_json(data, telegram_app.bot)
+    await telegram_app.process_update(update)
+    return "OK"
 
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+
+    async def run():
+        await telegram_app.initialize()
+        await telegram_app.start()
+
+        port = int(os.getenv("PORT", 10000))
+        app.run(host="0.0.0.0", port=port)
+
+    asyncio.run(run()) 
