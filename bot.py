@@ -1,13 +1,18 @@
 import os
-from flask import Flask, request
+from threading import Thread
+
+from flask import Flask
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 app = Flask(__name__)
 
-telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+@app.route("/")
+def home():
+    return "Golden VIP Bot is running!"
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -19,30 +24,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-telegram_app.add_handler(CommandHandler("start", start))
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "فەرمانەکان:\n"
+        "/start - دەستپێکردن\n"
+        "/help - یارمەتی"
+    )
 
 
-@app.route("/")
-def home():
-    return "Golden VIP Bot is running!"
+def run_flask():
+    app.run(host="0.0.0.0", port=8080)
 
 
-@app.route("/webhook", methods=["POST"])
-async def webhook():
-    data = request.get_json(force=True)
-    update = Update.de_json(data, telegram_app.bot)
-    await telegram_app.process_update(update)
-    return "OK"
+def main():
+    Thread(target=run_flask, daemon=True).start()
+
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
+
+    application.run_polling()
 
 
 if __name__ == "__main__":
-    import asyncio
-
-    async def run():
-        await telegram_app.initialize()
-        await telegram_app.start()
-
-        port = int(os.getenv("PORT", 10000))
-        app.run(host="0.0.0.0", port=port)
-
-    asyncio.run(run()) 
+    main()
