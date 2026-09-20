@@ -10,7 +10,7 @@ from telegram.ext import (
     ContextTypes,
 )
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("8971754803:AAFaSBm-rjBvpd8bz8Kli48Kwml1Y-ooYbM")
 
 app = Flask(__name__)
 
@@ -85,7 +85,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "💳 BUY GOLDEN VIP\n\n"
             "💎 بۆ بەدەستهێنانی VIP پەیوەندیمان پێوە بکە.\n\n"
-            "📩 Telegram: @YOUR_USERNAME\n"
+            "📩 Telegram: @@RQDQZchQzQ\n"
             "🎟 CODE: VIP"
         )
 
