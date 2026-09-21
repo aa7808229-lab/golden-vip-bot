@@ -17,7 +17,8 @@ from telegram.ext import (
 # SETTINGS
 # =========================
 
-BOT_TOKEN = os.getenv("8971754803:AAGGubnLtDYty2AcZJ7oOqf3Ncnul_1ZIhc")
+BOT_TOKEN = os.getenv("
+8971754803:AAHSFO7xvHIuql644py6RarhCEVRxwQiflg")
 
 ADMIN_ID = 6773856976
 CHANNEL_ID = "@betwen211"
