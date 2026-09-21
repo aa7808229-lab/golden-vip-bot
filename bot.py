@@ -13,13 +13,14 @@ from telegram.ext import (
     filters,
 )
 
-# =========================
-# SETTINGS
-# =========================
+# ==================================================
+# 🔐 BOT TOKEN
+# ==================================================
+BOT_TOKEN = "8971754803:AAGR2-QgdjspuvF3Uhp7xwfK9ghEVNyB9sI"
 
-BOT_TOKEN = os.getenv("
-8971754803:AAHSFO7xvHIuql644py6RarhCEVRxwQiflg")
-
+# ==================================================
+# ⚙️ SETTINGS
+# ==================================================
 ADMIN_ID = 6773856976
 CHANNEL_ID = "@betwen211"
 
@@ -28,14 +29,12 @@ TIKTOK_URL = "https://www.tiktok.com/@betwen211"
 
 pending_payments = {}
 
-
-# =========================
-# FLASK
-# =========================
-
 app = Flask(__name__)
 
 
+# ==================================================
+# 🌐 FLASK
+# ==================================================
 @app.route("/")
 def home():
     return "Golden VIP Bot is running!"
@@ -46,188 +45,137 @@ def run_flask():
     app.run(host="0.0.0.0", port=port)
 
 
-# =========================
-# 5 MAIN BUTTONS
-# =========================
+# ==================================================
+# 🤖 BOT MENU
+# ==================================================
+def bot_buttons():
+    keyboard = [
+        [InlineKeyboardButton("💎 VIP Predictions", callback_data="vip")],
+        [InlineKeyboardButton("🆓 Free Predictions", callback_data="free")],
+        [InlineKeyboardButton("💳 VIP Payment", callback_data="payment")],
+        [InlineKeyboardButton("📢 Telegram Channel", url=CHANNEL_URL)],
+        [InlineKeyboardButton("🎵 TikTok", url=TIKTOK_URL)],
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
-def main_buttons():
+
+# ==================================================
+# 📢 CHANNEL MENU
+# ==================================================
+def channel_buttons():
     keyboard = [
         [
             InlineKeyboardButton(
                 "💎 VIP Predictions",
-                callback_data="vip"
+                url="https://t.me/GoldenVipBot?start=vip",
             )
         ],
         [
             InlineKeyboardButton(
                 "🆓 Free Predictions",
-                callback_data="free"
+                url="https://t.me/GoldenVipBot?start=free",
             )
         ],
         [
             InlineKeyboardButton(
                 "💳 VIP Payment",
-                callback_data="payment"
+                url="https://t.me/GoldenVipBot?start=payment",
             )
         ],
-        [
-            InlineKeyboardButton(
-                "📢 Telegram Channel",
-                url=CHANNEL_URL
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "🎵 TikTok",
-                url=TIKTOK_URL
-            )
-        ],
+        [InlineKeyboardButton("📢 Telegram Channel", url=CHANNEL_URL)],
+        [InlineKeyboardButton("🎵 TikTok", url=TIKTOK_URL)],
     ]
-
     return InlineKeyboardMarkup(keyboard)
 
 
-# =========================
-# VIP PLANS
-# =========================
-
+# ==================================================
+# 💎 VIP PLANS
+# ==================================================
 def vip_buttons():
     keyboard = [
-        [
-            InlineKeyboardButton(
-                "💎 1 Month — $100",
-                callback_data="plan_1"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "💎 3 Months — $250",
-                callback_data="plan_3"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "💎 1 Year — $500",
-                callback_data="plan_12"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "🔙 Back",
-                callback_data="back"
-            )
-        ],
+        [InlineKeyboardButton("💎 1 Month — $100", callback_data="plan_1")],
+        [InlineKeyboardButton("💎 3 Months — $250", callback_data="plan_3")],
+        [InlineKeyboardButton("💎 1 Year — $500", callback_data="plan_12")],
+        [InlineKeyboardButton("🔙 Back", callback_data="back")],
     ]
-
     return InlineKeyboardMarkup(keyboard)
 
 
-# =========================
-# PAYMENT METHODS
-# =========================
-
+# ==================================================
+# 💳 PAYMENT METHODS
+# ==================================================
 def payment_buttons():
     keyboard = [
-        [
-            InlineKeyboardButton(
-                "📱 Korek",
-                callback_data="pay_korek"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "📱 Zain",
-                callback_data="pay_zain"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "📱 Asiacell",
-                callback_data="pay_asiacell"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "🔙 Back",
-                callback_data="back"
-            )
-        ],
+        [InlineKeyboardButton("📱 Korek", callback_data="pay_korek")],
+        [InlineKeyboardButton("📱 Zain", callback_data="pay_zain")],
+        [InlineKeyboardButton("📱 Asiacell", callback_data="pay_asiacell")],
+        [InlineKeyboardButton("🔙 Back", callback_data="back")],
     ]
-
     return InlineKeyboardMarkup(keyboard)
 
 
-# =========================
-# ADMIN APPROVE / REJECT
-# =========================
-
+# ==================================================
+# 👑 ADMIN APPROVE / REJECT
+# ==================================================
 def admin_payment_buttons(payment_id):
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "✅ Approve",
-                callback_data=f"approve:{payment_id}"
-            ),
-            InlineKeyboardButton(
-                "❌ Reject",
-                callback_data=f"reject:{payment_id}"
-            ),
-        ]
-    ]
-
+    keyboard = [[
+        InlineKeyboardButton(
+            "✅ Approve",
+            callback_data=f"approve:{payment_id}",
+        ),
+        InlineKeyboardButton(
+            "❌ Reject",
+            callback_data=f"reject:{payment_id}",
+        ),
+    ]]
     return InlineKeyboardMarkup(keyboard)
 
 
-# =========================
-# START
-# =========================
-
+# ==================================================
+# /START
+# ==================================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
+    message = update.effective_message
     args = context.args
 
-    # From VIP button in channel
-    if args and args[0] == "vip":
-        await update.message.reply_text(
+    if args and args[0].lower() == "vip":
+        await message.reply_text(
             "💎 VIP Predictions\n\n"
-            "پلانی VIP هەڵبژێرە:",
-            reply_markup=vip_buttons()
+            "ماوەی VIP هەڵبژێرە:",
+            reply_markup=vip_buttons(),
         )
         return
 
-    # From FREE button in channel
-    if args and args[0] == "free":
-        await update.message.reply_text(
+    if args and args[0].lower() == "free":
+        await message.reply_text(
             "🆓 Free Predictions\n\n"
-            "⚽ Free Predictions بەردەستن."
+            "⚽ Free Predictions بەردەستن.",
         )
         return
 
-    # From PAYMENT button in channel
-    if args and args[0] == "payment":
-        await update.message.reply_text(
+    if args and args[0].lower() == "payment":
+        await message.reply_text(
             "💳 VIP Payment\n\n"
             "پلانی VIP هەڵبژێرە:",
-            reply_markup=vip_buttons()
+            reply_markup=vip_buttons(),
         )
         return
 
-    # Normal start
-    await update.message.reply_text(
+    await message.reply_text(
         "🔥 GOLDEN VIP 🔥\n\n"
         "👑 بەخێربێیت\n\n"
         "💎 VIP Predictions\n"
         "🆓 Free Predictions\n"
         "💳 VIP Payment\n\n"
         "بەشەکەت هەڵبژێرە 👇",
-        reply_markup=main_buttons()
+        reply_markup=bot_buttons(),
     )
 
 
-# =========================
-# ADMIN POST
-# =========================
-
+# ==================================================
+# /POST
+# ==================================================
 async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if update.effective_user.id != ADMIN_ID:
@@ -235,20 +183,17 @@ async def post_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     context.user_data["admin_post_mode"] = True
 
-    await update.message.reply_text(
+    await update.effective_message.reply_text(
         "📢 POST MODE چالاک کرا.\n\n"
         "🖼️ ئێستا وێنەکە بنێرە.\n"
         "✍️ Caption ـەکەت لەگەڵ وێنەکە بنووسە.\n\n"
-        "بۆتەکە خۆکارانە:\n"
-        "🖼️ وێنە + ✍️ دەق + ٥ دوگمە\n"
-        "دەنێرێتە کەناڵ."
+        "پاشان پۆستەکە خۆکارانە دەنێردرێتە کەناڵ.",
     )
 
 
-# =========================
-# BUTTON HANDLER
-# =========================
-
+# ==================================================
+# 🔘 BUTTON HANDLER
+# ==================================================
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     query = update.callback_query
@@ -256,176 +201,141 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data
 
-    # VIP
     if data == "vip":
-
         await query.message.reply_text(
             "💎 VIP Predictions\n\n"
             "ماوەی VIP هەڵبژێرە:",
-            reply_markup=vip_buttons()
+            reply_markup=vip_buttons(),
         )
 
-    # FREE
     elif data == "free":
-
         await query.message.reply_text(
             "🆓 Free Predictions\n\n"
-            "⚽ Free Predictions بەردەستن."
+            "⚽ Free Predictions بەردەستن.",
         )
 
-    # PAYMENT
     elif data == "payment":
-
         await query.message.reply_text(
             "💳 VIP Payment\n\n"
             "پلانی VIP هەڵبژێرە:",
-            reply_markup=vip_buttons()
+            reply_markup=vip_buttons(),
         )
 
-    # 1 MONTH
     elif data == "plan_1":
-
         context.user_data["plan"] = "1 Month"
         context.user_data["price"] = "$100"
 
         await query.message.reply_text(
             "💎 1 Month — $100\n\n"
             "شێوازی پارەدان هەڵبژێرە:",
-            reply_markup=payment_buttons()
+            reply_markup=payment_buttons(),
         )
 
-    # 3 MONTHS
     elif data == "plan_3":
-
         context.user_data["plan"] = "3 Months"
         context.user_data["price"] = "$250"
 
         await query.message.reply_text(
             "💎 3 Months — $250\n\n"
             "شێوازی پارەدان هەڵبژێرە:",
-            reply_markup=payment_buttons()
+            reply_markup=payment_buttons(),
         )
 
-    # 1 YEAR
     elif data == "plan_12":
-
         context.user_data["plan"] = "1 Year"
         context.user_data["price"] = "$500"
 
         await query.message.reply_text(
             "💎 1 Year — $500\n\n"
             "شێوازی پارەدان هەڵبژێرە:",
-            reply_markup=payment_buttons()
+            reply_markup=payment_buttons(),
         )
 
-    # KOREK
     elif data == "pay_korek":
-
         context.user_data["payment"] = "Korek"
 
         await query.message.reply_text(
             "📱 Korek\n\n"
-            "📸 تکایە وێنەی پسوڵەکە بنێرە."
+            "📸 تکایە وێنەی پسوڵەکە بنێرە.",
         )
 
-    # ZAIN
     elif data == "pay_zain":
-
         context.user_data["payment"] = "Zain"
 
         await query.message.reply_text(
             "📱 Zain\n\n"
-            "📸 تکایە وێنەی پسوڵەکە بنێرە."
+            "📸 تکایە وێنەی پسوڵەکە بنێرە.",
         )
 
-    # ASIACELL
     elif data == "pay_asiacell":
-
         context.user_data["payment"] = "Asiacell"
 
         await query.message.reply_text(
             "📱 Asiacell\n\n"
-            "📸 تکایە وێنەی پسوڵەکە بنێرە."
+            "📸 تکایە وێنەی پسوڵەکە بنێرە.",
         )
 
-    # BACK
     elif data == "back":
-
         context.user_data.clear()
 
         await query.message.reply_text(
             "🏠 سەرەکی:",
-            reply_markup=main_buttons()
+            reply_markup=bot_buttons(),
         )
 
 
-# =========================
-# PHOTO HANDLER
-# =========================
-
+# ==================================================
+# 📸 PHOTO HANDLER
+# ==================================================
 async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    if not update.message:
+    message = update.effective_message
+    user = update.effective_user
+
+    if not message:
         return
 
-    user = update.effective_user
-    photo = update.message.photo[-1]
+    photo = message.photo[-1]
 
-    # =========================
-    # ADMIN → CHANNEL
-    # =========================
-
+    # 👑 ADMIN POST
     if user.id == ADMIN_ID:
 
         if context.user_data.get("admin_post_mode"):
 
-            caption = update.message.caption or "🔥 GOLDEN VIP"
+            caption = message.caption or "🔥 GOLDEN VIP"
 
             await context.bot.send_photo(
                 chat_id=CHANNEL_ID,
                 photo=photo.file_id,
                 caption=caption,
-                reply_markup=main_buttons()
+                reply_markup=channel_buttons(),
             )
 
             context.user_data["admin_post_mode"] = False
 
-            await update.message.reply_text(
-                "✅ پۆستەکە بە سەرکەوتوویی نێردرا بۆ کەناڵ."
+            await message.reply_text(
+                "✅ پۆستەکە بە سەرکەوتوویی نێردرا بۆ کەناڵ.",
             )
-
             return
 
-        await update.message.reply_text(
+        await message.reply_text(
             "بۆ ناردنی پۆست بۆ کەناڵ:\n\n"
             "/post\n\n"
-            "پاشان وێنەکە بنێرە."
+            "پاشان وێنەکە بنێرە.",
         )
-
         return
 
-    # =========================
-    # CUSTOMER RECEIPT
-    # =========================
-
+    # 💳 CUSTOMER RECEIPT
     payment = context.user_data.get("payment")
 
     if not payment:
-
-        await update.message.reply_text(
-            "❗ تکایە سەرەتا VIP Payment هەڵبژێرە."
+        await message.reply_text(
+            "❗ تکایە سەرەتا VIP Payment هەڵبژێرە.",
         )
         return
 
-    plan = context.user_data.get(
-        "plan",
-        "Not selected"
-    )
-
-    price = context.user_data.get(
-        "price",
-        "Not selected"
-    )
+    plan = context.user_data.get("plan", "Not selected")
+    price = context.user_data.get("price", "Not selected")
 
     username = (
         f"@{user.username}"
@@ -456,35 +366,36 @@ async def photo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📱 Payment: {payment}"
     )
 
-    # ONLY ADMIN
+    # 📩 RECEIPT GOES ONLY TO ADMIN
     await context.bot.send_photo(
         chat_id=ADMIN_ID,
         photo=photo.file_id,
         caption=admin_caption,
-        reply_markup=admin_payment_buttons(payment_id)
+        reply_markup=admin_payment_buttons(payment_id),
     )
 
-    # CUSTOMER
-    await update.message.reply_text(
+    await message.reply_text(
         "✅ پسوڵەکەت وەرگیرا.\n\n"
-        "⏳ چاوەڕێ بکە تا Admin پشتڕاستی بکاتەوە."
+        "⏳ چاوەڕێ بکە تا Admin پشتڕاستی بکاتەوە.",
     )
 
     context.user_data.clear()
 
 
-# =========================
-# APPROVE / REJECT
-# =========================
-
-async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ==================================================
+# 👑 ADMIN PAYMENT HANDLER
+# ==================================================
+async def admin_payment_handler(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
 
     query = update.callback_query
 
     if query.from_user.id != ADMIN_ID:
         await query.answer(
             "❌ تۆ Admin نیت.",
-            show_alert=True
+            show_alert=True,
         )
         return
 
@@ -496,7 +407,7 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
 
     if not payment:
         await query.message.reply_text(
-            "❌ ئەم داواکارییە نەدۆزرایەوە."
+            "❌ ئەم داواکارییە نەدۆزرایەوە.",
         )
         return
 
@@ -505,7 +416,6 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
     price = payment["price"]
     method = payment["payment"]
 
-    # APPROVE
     if action == "approve":
 
         await context.bot.send_message(
@@ -516,8 +426,8 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
                 f"💎 Plan: {plan}\n"
                 f"💵 Price: {price}\n"
                 f"📱 Payment: {method}\n\n"
-                "👑 بەخێربێیت بۆ Golden VIP."
-            )
+                "👑 بەخێربێیت بۆ Golden VIP.",
+            ),
         )
 
         await query.message.edit_caption(
@@ -532,7 +442,6 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
             )
         )
 
-    # REJECT
     elif action == "reject":
 
         await context.bot.send_message(
@@ -541,7 +450,7 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
                 "❌ VIP Payment Rejected\n\n"
                 "ببورە، پسوڵەکەت پشتڕاست نەکرایەوە.\n\n"
                 "تکایە پسوڵەی دروست دووبارە بنێرە."
-            )
+            ),
         )
 
         await query.message.edit_caption(
@@ -559,29 +468,36 @@ async def admin_payment_handler(update: Update, context: ContextTypes.DEFAULT_TY
     pending_payments.pop(payment_id, None)
 
 
-# =========================
-# HELP
-# =========================
+# ==================================================
+# /HELP
+# ==================================================
+async def help_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    await update.message.reply_text(
+    await update.effective_message.reply_text(
         "📌 GOLDEN VIP\n\n"
         "/start - دەستپێکردن\n"
         "/help - یارمەتی\n"
-        "/post - ناردنی پۆست بۆ کەناڵ"
+        "/post - ناردنی پۆست بۆ کەناڵ",
     )
 
 
-# =========================
-# MAIN
-# =========================
-
+# ==================================================
+# 🚀 MAIN
+# ==================================================
 def main():
+
+    if not BOT_TOKEN or BOT_TOKEN == "PUT_YOUR_BOT_TOKEN_HERE":
+        raise RuntimeError(
+            "❌ BOT_TOKEN دانەنراوە. "
+            "Token ـەکەت لە سەرەوە دابنێ."
+        )
 
     threading.Thread(
         target=run_flask,
-        daemon=True
+        daemon=True,
     ).start()
 
     application = (
@@ -602,30 +518,29 @@ def main():
         CommandHandler("post", post_command)
     )
 
-    # Approve / Reject
     application.add_handler(
         CallbackQueryHandler(
             admin_payment_handler,
-            pattern=r"^(approve|reject):"
+            pattern=r"^(approve|reject):",
         )
     )
 
-    # Normal buttons
     application.add_handler(
         CallbackQueryHandler(button_handler)
     )
 
-    # Photos
     application.add_handler(
         MessageHandler(
             filters.PHOTO,
-            photo_handler
+            photo_handler,
         )
     )
 
     print("🤖 GOLDEN VIP BOT IS RUNNING...")
 
-    application.run_polling()
+    application.run_polling(
+        drop_pending_updates=True
+    )
 
 
 if __name__ == "__main__":
